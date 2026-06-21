@@ -6,8 +6,10 @@ import { useBookmarks } from "../hooks/useBookmarks";
 import { useRole } from "../hooks/useRole";
 import Navbar from "../components/Navbar";
 import ResourceCard from "../components/ResourceCard";
+import ActivityFeed from "../components/ActivityFeed";
 import { formatDate, mapResource } from "../lib/resourceUtils";
 import { RESOURCE_STATUS } from "../lib/roles";
+import { useActivityFeed } from "../hooks/useActivityFeed";
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -20,6 +22,7 @@ export default function Dashboard() {
   const { currentUser, userProfile } = useAuth();
   const { bookmarkCount } = useBookmarks();
   const { isAdmin } = useRole();
+  const { activities, loading: activityLoading } = useActivityFeed(6);
   const [recentUploads, setRecentUploads] = useState([]);
   const [pendingCount, setPendingCount] = useState(0);
   const [loadingRecent, setLoadingRecent] = useState(true);
@@ -61,8 +64,10 @@ export default function Dashboard() {
   ];
 
   const adminActions = [
+    { to: "/admin/dashboard", label: "Admin Dashboard", desc: "Platform stats", color: "bg-slate-50 text-slate-700 border-slate-200" },
     { to: "/admin/review", label: "Review Queue", desc: `${pendingCount} pending`, color: "bg-orange-50 text-orange-700 border-orange-100" },
     { to: "/admin/users", label: "Manage Users", desc: "Assign roles", color: "bg-indigo-50 text-indigo-700 border-indigo-100" },
+    { to: "/admin/analytics", label: "Analytics", desc: "Charts & insights", color: "bg-emerald-50 text-emerald-700 border-emerald-100" },
   ];
 
   const quickActions = isAdmin ? [...adminActions, ...studentActions] : studentActions;
@@ -160,6 +165,15 @@ export default function Dashboard() {
               ))}
             </div>
           )}
+        </div>
+
+        <div className="mt-8">
+          <ActivityFeed
+            activities={activities}
+            loading={activityLoading}
+            title="Recent Activity"
+            emptyMessage="Activity will appear as users upload, bookmark, and download resources."
+          />
         </div>
 
         <div className="mt-6 text-sm text-slate-500">

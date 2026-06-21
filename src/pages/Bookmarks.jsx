@@ -6,7 +6,7 @@ import { useBookmarks } from "../hooks/useBookmarks";
 import Navbar from "../components/Navbar";
 import ResourceCard from "../components/ResourceCard";
 import ResourceSearch from "../components/ResourceSearch";
-import { filterResources, mapResource } from "../lib/resourceUtils";
+import { filterAndSortResources, mapResource, SORT_OPTIONS } from "../lib/resourceUtils";
 
 export default function Bookmarks() {
   const { currentUser } = useAuth();
@@ -18,6 +18,10 @@ export default function Bookmarks() {
   const [titleFilter, setTitleFilter] = useState("");
   const [subjectFilter, setSubjectFilter] = useState("");
   const [semesterFilter, setSemesterFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [minRatingFilter, setMinRatingFilter] = useState("");
+  const [minDownloadsFilter, setMinDownloadsFilter] = useState("");
+  const [sortBy, setSortBy] = useState(SORT_OPTIONS.NEWEST);
 
   async function fetchBookmarkedResources() {
     if (!currentUser) return;
@@ -50,17 +54,24 @@ export default function Bookmarks() {
     fetchBookmarkedResources();
   }, [currentUser]);
 
-  async function handleBookmarkToggle(resourceId) {
-    await toggleBookmark(resourceId);
+  async function handleBookmarkToggle(resourceId, resourceTitle) {
+    await toggleBookmark(resourceId, resourceTitle);
     await fetchBookmarkedResources();
     await fetchBookmarks();
   }
 
-  const filtered = filterResources(resources, {
-    title: titleFilter,
-    subject: subjectFilter,
-    semester: semesterFilter,
-  });
+  const filtered = filterAndSortResources(
+    resources,
+    {
+      title: titleFilter,
+      subject: subjectFilter,
+      semester: semesterFilter,
+      category: categoryFilter,
+      minRating: minRatingFilter,
+      minDownloads: minDownloadsFilter,
+    },
+    sortBy
+  );
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -75,9 +86,17 @@ export default function Bookmarks() {
           title={titleFilter}
           subject={subjectFilter}
           semester={semesterFilter}
+          category={categoryFilter}
+          minRating={minRatingFilter}
+          minDownloads={minDownloadsFilter}
+          sortBy={sortBy}
           onTitleChange={setTitleFilter}
           onSubjectChange={setSubjectFilter}
           onSemesterChange={setSemesterFilter}
+          onCategoryChange={setCategoryFilter}
+          onMinRatingChange={setMinRatingFilter}
+          onMinDownloadsChange={setMinDownloadsFilter}
+          onSortChange={setSortBy}
           resultCount={filtered.length}
           totalCount={resources.length}
         />
@@ -105,6 +124,7 @@ export default function Bookmarks() {
                 resource={resource}
                 isBookmarked={isBookmarked(resource.id)}
                 onBookmarkToggle={handleBookmarkToggle}
+                onResourceUpdate={fetchBookmarkedResources}
               />
             ))}
           </div>

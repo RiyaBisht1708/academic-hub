@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { supabase, STORAGE_BUCKET } from "../supabase";
 import { useAuth } from "../context/AuthContext";
 import { RESOURCE_STATUS } from "../lib/roles";
+import { logActivity } from "../lib/activity";
 
 const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
 const CATEGORIES = ["Notes", "Question Paper", "Assignment", "Lab Manual", "Other"];
@@ -90,17 +91,31 @@ export default function UploadForm({ onUploaded }) {
         .getPublicUrl(filePath);
       const fileURL = urlData.publicUrl;
 
-      const { error: insertError } = await supabase.from("resources").insert({
-        title,
-        semester: Number(semester),
-        subject,
-        category,
+      const { data: inserted, error: insertError } = await supabase
+        .from("resources")
+        .insert({
+          title,
+          semester: Number(semester),
+          subject,
+          category,
+          file_url: fileURL,
+          uploader: userProfile?.fullName || currentUser.email,
+          uploader_id: currentUser.uid,
+          status: RESOURCE_STATUS.PENDING,
+        })
+        .select()
+        .single();
+      if (insertError) throw insertError;
+
+      await supabase.from("resource_versions").insert({
+        resource_id: inserted.id,
+        version_number: 1,
         file_url: fileURL,
         uploader: userProfile?.fullName || currentUser.email,
         uploader_id: currentUser.uid,
-        status: RESOURCE_STATUS.PENDING,
       });
-      if (insertError) throw insertError;
+
+      await logActivity("upload", inserted.id, title);
 
       try {
         await supabase.rpc("increment_upload_count", { user_id: currentUser.uid });

@@ -38,6 +38,12 @@ export default function Navbar() {
             </Link>
             {isAdmin && (
               <>
+                <Link to="/admin/dashboard" className={`hidden lg:inline ${navLinkClass}`}>
+                  Admin
+                </Link>
+                <Link to="/admin/analytics" className={`hidden lg:inline ${navLinkClass}`}>
+                  Analytics
+                </Link>
                 <Link to="/admin/review" className={`hidden lg:inline ${navLinkClass}`}>
                   Review
                 </Link>

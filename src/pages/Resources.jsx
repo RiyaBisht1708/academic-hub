@@ -5,7 +5,7 @@ import Navbar from "../components/Navbar";
 import UploadForm from "../components/UploadForm";
 import ResourceCard from "../components/ResourceCard";
 import ResourceSearch from "../components/ResourceSearch";
-import { filterResources, mapResource } from "../lib/resourceUtils";
+import { filterAndSortResources, mapResource, SORT_OPTIONS } from "../lib/resourceUtils";
 
 export default function Resources() {
   const { isBookmarked, toggleBookmark } = useBookmarks();
@@ -16,6 +16,10 @@ export default function Resources() {
   const [titleFilter, setTitleFilter] = useState("");
   const [subjectFilter, setSubjectFilter] = useState("");
   const [semesterFilter, setSemesterFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [minRatingFilter, setMinRatingFilter] = useState("");
+  const [minDownloadsFilter, setMinDownloadsFilter] = useState("");
+  const [sortBy, setSortBy] = useState(SORT_OPTIONS.NEWEST);
 
   async function fetchResources() {
     setLoading(true);
@@ -39,11 +43,18 @@ export default function Resources() {
     fetchResources();
   }, []);
 
-  const filtered = filterResources(resources, {
-    title: titleFilter,
-    subject: subjectFilter,
-    semester: semesterFilter,
-  });
+  const filtered = filterAndSortResources(
+    resources,
+    {
+      title: titleFilter,
+      subject: subjectFilter,
+      semester: semesterFilter,
+      category: categoryFilter,
+      minRating: minRatingFilter,
+      minDownloads: minDownloadsFilter,
+    },
+    sortBy
+  );
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -52,7 +63,7 @@ export default function Resources() {
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-slate-800">Resources</h1>
           <p className="text-slate-500 mt-1">
-            Upload, search, and download academic materials. New uploads require admin approval.
+            Upload, search, rate, and download academic materials. New uploads require admin approval.
           </p>
         </div>
 
@@ -62,9 +73,17 @@ export default function Resources() {
           title={titleFilter}
           subject={subjectFilter}
           semester={semesterFilter}
+          category={categoryFilter}
+          minRating={minRatingFilter}
+          minDownloads={minDownloadsFilter}
+          sortBy={sortBy}
           onTitleChange={setTitleFilter}
           onSubjectChange={setSubjectFilter}
           onSemesterChange={setSemesterFilter}
+          onCategoryChange={setCategoryFilter}
+          onMinRatingChange={setMinRatingFilter}
+          onMinDownloadsChange={setMinDownloadsFilter}
+          onSortChange={setSortBy}
           resultCount={filtered.length}
           totalCount={resources.length}
         />
@@ -75,7 +94,7 @@ export default function Resources() {
           <p className="text-slate-600">No resources found. Be the first to upload!</p>
         )}
         {!loading && resources.length > 0 && filtered.length === 0 && (
-          <p className="text-slate-600">No resources match your search.</p>
+          <p className="text-slate-600">No resources match your filters.</p>
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -85,6 +104,7 @@ export default function Resources() {
               resource={resource}
               isBookmarked={isBookmarked(resource.id)}
               onBookmarkToggle={toggleBookmark}
+              onResourceUpdate={fetchResources}
             />
           ))}
         </div>

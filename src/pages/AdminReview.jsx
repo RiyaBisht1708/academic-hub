@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import StatusBadge from "../components/StatusBadge";
 import { formatDate, mapResource } from "../lib/resourceUtils";
 import { RESOURCE_STATUS } from "../lib/roles";
+import { logActivity } from "../lib/activity";
 
 const TABS = ["Pending", "Approved", "Rejected", "All"];
 
@@ -45,11 +46,19 @@ export default function AdminReview() {
     setActionId(id);
     setError("");
     try {
+      const resource = resources.find((r) => r.id === id);
       const { error: updateError } = await supabase
         .from("resources")
         .update({ status })
         .eq("id", id);
       if (updateError) throw updateError;
+
+      if (status === RESOURCE_STATUS.APPROVED) {
+        await logActivity("approve", id, resource?.title);
+      } else if (status === RESOURCE_STATUS.REJECTED) {
+        await logActivity("reject", id, resource?.title);
+      }
+
       await fetchResources();
     } catch (err) {
       setError(err.message);

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../supabase";
 import { useAuth } from "../context/AuthContext";
+import { logActivity } from "../lib/activity";
 
 export function useBookmarks() {
   const { currentUser } = useAuth();
@@ -35,7 +36,7 @@ export function useBookmarks() {
     [bookmarkIds]
   );
 
-  async function toggleBookmark(resourceId) {
+  async function toggleBookmark(resourceId, resourceTitle = null) {
     if (!currentUser) return false;
 
     if (bookmarkIds.has(resourceId)) {
@@ -61,6 +62,8 @@ export function useBookmarks() {
     });
 
     if (error) throw error;
+
+    await logActivity("bookmark", resourceId, resourceTitle);
 
     setBookmarkIds((prev) => new Set(prev).add(resourceId));
     return true;

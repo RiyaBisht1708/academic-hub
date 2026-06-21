@@ -11,6 +11,8 @@ import Profile from "./pages/Profile";
 import Bookmarks from "./pages/Bookmarks";
 import AdminReview from "./pages/AdminReview";
 import AdminUsers from "./pages/AdminUsers";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminAnalytics from "./pages/AdminAnalytics";
 
 export default function App() {
   return (
@@ -49,6 +51,26 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Bookmarks />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute>
+                <AdminRoute>
+                  <AdminDashboard />
+                </AdminRoute>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/analytics"
+            element={
+              <ProtectedRoute>
+                <AdminRoute>
+                  <AdminAnalytics />
+                </AdminRoute>
               </ProtectedRoute>
             }
           />
