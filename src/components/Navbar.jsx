@@ -10,23 +10,37 @@ export default function Navbar() {
     navigate("/login");
   }
 
+  const navLinkClass =
+    "text-sm font-medium text-white/90 hover:text-white transition-colors";
+
   return (
-    <nav className="bg-blue-700 text-white px-6 py-4 flex justify-between items-center shadow">
-      <Link to="/dashboard" className="font-bold text-lg">
-        Cloud Academic Resource Hub
-      </Link>
-      <div className="flex gap-4 items-center">
+    <nav className="bg-blue-700 text-white px-4 md:px-6 py-4 shadow-lg">
+      <div className="max-w-6xl mx-auto flex justify-between items-center">
+        <Link to="/dashboard" className="font-bold text-lg tracking-tight">
+          Cloud Academic Resource Hub
+        </Link>
+
         {currentUser && (
-          <>
-            <Link to="/dashboard" className="hover:underline">Dashboard</Link>
-            <Link to="/resources" className="hover:underline">Resources</Link>
+          <div className="flex items-center gap-3 md:gap-5">
+            <Link to="/dashboard" className={`hidden sm:inline ${navLinkClass}`}>
+              Dashboard
+            </Link>
+            <Link to="/resources" className={navLinkClass}>
+              Resources
+            </Link>
+            <Link to="/bookmarks" className={`hidden sm:inline ${navLinkClass}`}>
+              Bookmarks
+            </Link>
+            <Link to="/profile" className={`hidden md:inline ${navLinkClass}`}>
+              Profile
+            </Link>
             <button
               onClick={handleLogout}
-              className="bg-white text-blue-700 px-3 py-1 rounded font-medium hover:bg-gray-100"
+              className="bg-white text-blue-700 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors"
             >
               Logout
             </button>
-          </>
+          </div>
         )}
       </div>
     </nav>

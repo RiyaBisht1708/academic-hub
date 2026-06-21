@@ -1,32 +1,21 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../supabase";
+import { useBookmarks } from "../hooks/useBookmarks";
 import Navbar from "../components/Navbar";
 import UploadForm from "../components/UploadForm";
 import ResourceCard from "../components/ResourceCard";
-
-const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
-
-function mapResource(row) {
-  return {
-    id: row.id,
-    title: row.title,
-    semester: row.semester,
-    subject: row.subject,
-    category: row.category,
-    fileURL: row.file_url,
-    uploader: row.uploader,
-    uploaderId: row.uploader_id,
-    createdAt: row.created_at,
-  };
-}
+import ResourceSearch from "../components/ResourceSearch";
+import { filterResources, mapResource } from "../lib/resourceUtils";
 
 export default function Resources() {
+  const { isBookmarked, toggleBookmark } = useBookmarks();
   const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const [semesterFilter, setSemesterFilter] = useState("");
+  const [titleFilter, setTitleFilter] = useState("");
   const [subjectFilter, setSubjectFilter] = useState("");
+  const [semesterFilter, setSemesterFilter] = useState("");
 
   async function fetchResources() {
     setLoading(true);
@@ -50,48 +39,51 @@ export default function Resources() {
     fetchResources();
   }, []);
 
-  const filtered = resources.filter((r) => {
-    const matchSemester = semesterFilter ? String(r.semester) === String(semesterFilter) : true;
-    const matchSubject = subjectFilter
-      ? r.subject.toLowerCase().includes(subjectFilter.toLowerCase())
-      : true;
-    return matchSemester && matchSubject;
+  const filtered = filterResources(resources, {
+    title: titleFilter,
+    subject: subjectFilter,
+    semester: semesterFilter,
   });
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-slate-50">
       <Navbar />
-      <div className="max-w-5xl mx-auto p-6">
-        <UploadForm onUploaded={fetchResources} />
-
-        <div className="flex flex-col md:flex-row gap-3 mb-6">
-          <select
-            value={semesterFilter}
-            onChange={(e) => setSemesterFilter(e.target.value)}
-            className="border rounded px-3 py-2"
-          >
-            <option value="">All Semesters</option>
-            {SEMESTERS.map((s) => (
-              <option key={s} value={s}>{`Semester ${s}`}</option>
-            ))}
-          </select>
-          <input
-            placeholder="Filter by subject..."
-            value={subjectFilter}
-            onChange={(e) => setSubjectFilter(e.target.value)}
-            className="border rounded px-3 py-2 flex-1"
-          />
+      <div className="max-w-6xl mx-auto p-4 md:p-6">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-slate-800">Resources</h1>
+          <p className="text-slate-500 mt-1">Upload, search, and download academic materials</p>
         </div>
 
-        {loading && <p className="text-gray-600">Loading resources...</p>}
+        <UploadForm onUploaded={fetchResources} />
+
+        <ResourceSearch
+          title={titleFilter}
+          subject={subjectFilter}
+          semester={semesterFilter}
+          onTitleChange={setTitleFilter}
+          onSubjectChange={setSubjectFilter}
+          onSemesterChange={setSemesterFilter}
+          resultCount={filtered.length}
+          totalCount={resources.length}
+        />
+
+        {loading && <p className="text-slate-600">Loading resources...</p>}
         {error && <p className="text-red-600">{error}</p>}
-        {!loading && filtered.length === 0 && (
-          <p className="text-gray-600">No resources found.</p>
+        {!loading && !error && resources.length === 0 && (
+          <p className="text-slate-600">No resources found. Be the first to upload!</p>
+        )}
+        {!loading && resources.length > 0 && filtered.length === 0 && (
+          <p className="text-slate-600">No resources match your search.</p>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((r) => (
-            <ResourceCard key={r.id} resource={r} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filtered.map((resource) => (
+            <ResourceCard
+              key={resource.id}
+              resource={resource}
+              isBookmarked={isBookmarked(resource.id)}
+              onBookmarkToggle={toggleBookmark}
+            />
           ))}
         </div>
       </div>

@@ -97,6 +97,32 @@ export function AuthProvider({ children }) {
     if (error) throw error;
   }
 
+  async function updateProfile({ fullName, branch, semester }) {
+    if (!currentUser) throw new Error("Not authenticated.");
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        full_name: fullName,
+        branch,
+        semester: Number(semester),
+      })
+      .eq("id", currentUser.uid);
+
+    if (error) throw error;
+
+    const profile = await fetchUserProfile(currentUser.uid);
+    setUserProfile(profile);
+    return profile;
+  }
+
+  async function refreshProfile() {
+    if (!currentUser) return null;
+    const profile = await fetchUserProfile(currentUser.uid);
+    setUserProfile(profile);
+    return profile;
+  }
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       const user = session?.user ?? null;
@@ -123,7 +149,16 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const value = { currentUser, userProfile, register, login, logout, loading };
+  const value = {
+    currentUser,
+    userProfile,
+    register,
+    login,
+    logout,
+    updateProfile,
+    refreshProfile,
+    loading,
+  };
 
   return (
     <AuthContext.Provider value={value}>

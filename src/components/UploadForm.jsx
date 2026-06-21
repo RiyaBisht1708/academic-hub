@@ -32,7 +32,7 @@ function getUploadErrorMessage(err) {
 }
 
 export default function UploadForm({ onUploaded }) {
-  const { currentUser, userProfile } = useAuth();
+  const { currentUser, userProfile, refreshProfile } = useAuth();
   const formRef = useRef(null);
   const fileInputRef = useRef(null);
 
@@ -102,8 +102,9 @@ export default function UploadForm({ onUploaded }) {
 
       try {
         await supabase.rpc("increment_upload_count", { user_id: currentUser.uid });
+        await refreshProfile();
       } catch {
-        // Upload already succeeded; don't block on counter update.
+        // Upload already succeeded; don't block on profile counter updates.
       }
 
       setSuccess("Resource uploaded successfully!");

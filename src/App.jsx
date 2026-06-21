@@ -6,6 +6,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Resources from "./pages/Resources";
+import Profile from "./pages/Profile";
+import Bookmarks from "./pages/Bookmarks";
 
 export default function App() {
   return (
@@ -28,6 +30,22 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Resources />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/bookmarks"
+            element={
+              <ProtectedRoute>
+                <Bookmarks />
               </ProtectedRoute>
             }
           />
