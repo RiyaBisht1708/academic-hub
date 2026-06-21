@@ -10,6 +10,7 @@ export function mapResource(row) {
     fileURL: row.file_url,
     uploader: row.uploader,
     uploaderId: row.uploader_id,
+    status: row.status || "Approved",
     createdAt: row.created_at,
   };
 }

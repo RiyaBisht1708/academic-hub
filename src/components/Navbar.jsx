@@ -1,8 +1,10 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useRole } from "../hooks/useRole";
 
 export default function Navbar() {
   const { currentUser, logout } = useAuth();
+  const { isAdmin } = useRole();
   const navigate = useNavigate();
 
   async function handleLogout() {
@@ -34,6 +36,16 @@ export default function Navbar() {
             <Link to="/profile" className={`hidden md:inline ${navLinkClass}`}>
               Profile
             </Link>
+            {isAdmin && (
+              <>
+                <Link to="/admin/review" className={`hidden lg:inline ${navLinkClass}`}>
+                  Review
+                </Link>
+                <Link to="/admin/users" className={`hidden lg:inline ${navLinkClass}`}>
+                  Users
+                </Link>
+              </>
+            )}
             <button
               onClick={handleLogout}
               className="bg-white text-blue-700 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors"

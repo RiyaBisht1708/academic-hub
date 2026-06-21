@@ -110,3 +110,75 @@ create policy "Users can delete own bookmarks"
   on public.bookmarks for delete
   to authenticated
   using (auth.uid() = user_id);
+
+-- Phase 3A: RBAC + Resource Approval
+create or replace function public.is_admin()
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles
+    where id = auth.uid() and role = 'Admin'
+  );
+$$;
+
+alter table public.profiles
+  drop constraint if exists profiles_role_check;
+
+alter table public.profiles
+  add constraint profiles_role_check
+  check (role in ('Student', 'Admin'));
+
+alter table public.resources
+  add column if not exists status text not null default 'Pending';
+
+alter table public.resources
+  drop constraint if exists resources_status_check;
+
+alter table public.resources
+  add constraint resources_status_check
+  check (status in ('Pending', 'Approved', 'Rejected'));
+
+drop policy if exists "Authenticated users can read resources" on public.resources;
+drop policy if exists "Authenticated users can insert resources" on public.resources;
+drop policy if exists "Users can read allowed resources" on public.resources;
+drop policy if exists "Users can insert own resources as pending" on public.resources;
+drop policy if exists "Admins can update resources" on public.resources;
+drop policy if exists "Admins can delete resources" on public.resources;
+
+create policy "Users can read allowed resources"
+  on public.resources for select
+  to authenticated
+  using (
+    status = 'Approved'
+    or uploader_id = auth.uid()
+    or public.is_admin()
+  );
+
+create policy "Users can insert own resources as pending"
+  on public.resources for insert
+  to authenticated
+  with check (
+    auth.uid() = uploader_id
+    and status = 'Pending'
+  );
+
+create policy "Admins can update resources"
+  on public.resources for update
+  to authenticated
+  using (public.is_admin());
+
+create policy "Admins can delete resources"
+  on public.resources for delete
+  to authenticated
+  using (public.is_admin());
+
+drop policy if exists "Admins can update any profile" on public.profiles;
+
+create policy "Admins can update any profile"
+  on public.profiles for update
+  to authenticated
+  using (public.is_admin());

@@ -57,6 +57,7 @@ export function AuthProvider({ children }) {
       email,
       branch,
       semester: Number(semester),
+      role: "Student",
     });
 
     if (profileError) throw profileError;

@@ -148,6 +148,10 @@ export default function Profile() {
                     </dd>
                   </div>
                   <div className="bg-slate-50 rounded-lg p-4">
+                    <dt className="text-xs font-medium text-slate-500 uppercase tracking-wide">Role</dt>
+                    <dd className="mt-1 font-semibold text-slate-800">{userProfile?.role || "Student"}</dd>
+                  </div>
+                  <div className="bg-slate-50 rounded-lg p-4">
                     <dt className="text-xs font-medium text-slate-500 uppercase tracking-wide">Uploads</dt>
                     <dd className="mt-1 font-semibold text-slate-800">{userProfile?.uploadCount ?? 0}</dd>
                   </div>

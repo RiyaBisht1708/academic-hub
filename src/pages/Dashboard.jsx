@@ -3,9 +3,11 @@ import { Link } from "react-router-dom";
 import { supabase } from "../supabase";
 import { useAuth } from "../context/AuthContext";
 import { useBookmarks } from "../hooks/useBookmarks";
+import { useRole } from "../hooks/useRole";
 import Navbar from "../components/Navbar";
 import ResourceCard from "../components/ResourceCard";
 import { formatDate, mapResource } from "../lib/resourceUtils";
+import { RESOURCE_STATUS } from "../lib/roles";
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -17,34 +19,53 @@ function getGreeting() {
 export default function Dashboard() {
   const { currentUser, userProfile } = useAuth();
   const { bookmarkCount } = useBookmarks();
+  const { isAdmin } = useRole();
   const [recentUploads, setRecentUploads] = useState([]);
+  const [pendingCount, setPendingCount] = useState(0);
   const [loadingRecent, setLoadingRecent] = useState(true);
 
   useEffect(() => {
-    async function fetchRecentUploads() {
+    async function fetchDashboardData() {
       if (!currentUser) return;
 
       setLoadingRecent(true);
-      const { data } = await supabase
-        .from("resources")
-        .select("*")
-        .eq("uploader_id", currentUser.uid)
-        .order("created_at", { ascending: false })
-        .limit(3);
 
-      setRecentUploads((data || []).map(mapResource));
+      const [recentResult, pendingResult] = await Promise.all([
+        supabase
+          .from("resources")
+          .select("*")
+          .eq("uploader_id", currentUser.uid)
+          .order("created_at", { ascending: false })
+          .limit(3),
+        isAdmin
+          ? supabase
+              .from("resources")
+              .select("id", { count: "exact", head: true })
+              .eq("status", RESOURCE_STATUS.PENDING)
+          : Promise.resolve({ count: 0 }),
+      ]);
+
+      setRecentUploads((recentResult.data || []).map(mapResource));
+      setPendingCount(pendingResult.count || 0);
       setLoadingRecent(false);
     }
 
-    fetchRecentUploads();
-  }, [currentUser]);
+    fetchDashboardData();
+  }, [currentUser, isAdmin]);
 
-  const quickActions = [
+  const studentActions = [
     { to: "/resources", label: "Browse Resources", desc: "Find notes & papers", color: "bg-blue-50 text-blue-700 border-blue-100" },
     { to: "/resources", label: "Upload PDF", desc: "Share study material", color: "bg-emerald-50 text-emerald-700 border-emerald-100" },
     { to: "/bookmarks", label: "My Bookmarks", desc: "Saved resources", color: "bg-amber-50 text-amber-700 border-amber-100" },
     { to: "/profile", label: "Edit Profile", desc: "Update your details", color: "bg-purple-50 text-purple-700 border-purple-100" },
   ];
+
+  const adminActions = [
+    { to: "/admin/review", label: "Review Queue", desc: `${pendingCount} pending`, color: "bg-orange-50 text-orange-700 border-orange-100" },
+    { to: "/admin/users", label: "Manage Users", desc: "Assign roles", color: "bg-indigo-50 text-indigo-700 border-indigo-100" },
+  ];
+
+  const quickActions = isAdmin ? [...adminActions, ...studentActions] : studentActions;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -56,6 +77,11 @@ export default function Dashboard() {
           </h1>
           <p className="text-slate-500 mt-1">
             Welcome back to Cloud Academic Resource Hub
+            {isAdmin && (
+              <span className="ml-2 inline-flex items-center text-xs font-semibold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">
+                Admin
+              </span>
+            )}
           </p>
         </div>
 
@@ -68,12 +94,19 @@ export default function Dashboard() {
             <p className="text-sm text-slate-500">Bookmarks</p>
             <p className="text-3xl font-bold text-amber-500 mt-1">{bookmarkCount}</p>
           </div>
-          <div className="bg-white rounded-xl shadow-md border border-slate-100 p-5">
-            <p className="text-sm text-slate-500">Semester</p>
-            <p className="text-3xl font-bold text-slate-800 mt-1">
-              {userProfile?.semester ?? "—"}
-            </p>
-          </div>
+          {isAdmin ? (
+            <div className="bg-white rounded-xl shadow-md border border-slate-100 p-5">
+              <p className="text-sm text-slate-500">Pending Review</p>
+              <p className="text-3xl font-bold text-orange-500 mt-1">{pendingCount}</p>
+            </div>
+          ) : (
+            <div className="bg-white rounded-xl shadow-md border border-slate-100 p-5">
+              <p className="text-sm text-slate-500">Semester</p>
+              <p className="text-3xl font-bold text-slate-800 mt-1">
+                {userProfile?.semester ?? "—"}
+              </p>
+            </div>
+          )}
           <div className="bg-white rounded-xl shadow-md border border-slate-100 p-5">
             <p className="text-sm text-slate-500">Branch</p>
             <p className="text-xl font-bold text-slate-800 mt-1 truncate">

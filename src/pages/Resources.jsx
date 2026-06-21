@@ -51,7 +51,9 @@ export default function Resources() {
       <div className="max-w-6xl mx-auto p-4 md:p-6">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-slate-800">Resources</h1>
-          <p className="text-slate-500 mt-1">Upload, search, and download academic materials</p>
+          <p className="text-slate-500 mt-1">
+            Upload, search, and download academic materials. New uploads require admin approval.
+          </p>
         </div>
 
         <UploadForm onUploaded={fetchResources} />

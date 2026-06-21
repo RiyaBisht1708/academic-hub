@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminRoute from "./components/AdminRoute";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -8,6 +9,8 @@ import Dashboard from "./pages/Dashboard";
 import Resources from "./pages/Resources";
 import Profile from "./pages/Profile";
 import Bookmarks from "./pages/Bookmarks";
+import AdminReview from "./pages/AdminReview";
+import AdminUsers from "./pages/AdminUsers";
 
 export default function App() {
   return (
@@ -46,6 +49,26 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Bookmarks />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/review"
+            element={
+              <ProtectedRoute>
+                <AdminRoute>
+                  <AdminReview />
+                </AdminRoute>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute>
+                <AdminRoute>
+                  <AdminUsers />
+                </AdminRoute>
               </ProtectedRoute>
             }
           />

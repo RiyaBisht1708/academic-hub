@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { supabase, STORAGE_BUCKET } from "../supabase";
 import { useAuth } from "../context/AuthContext";
+import { RESOURCE_STATUS } from "../lib/roles";
 
 const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
 const CATEGORIES = ["Notes", "Question Paper", "Assignment", "Lab Manual", "Other"];
@@ -97,6 +98,7 @@ export default function UploadForm({ onUploaded }) {
         file_url: fileURL,
         uploader: userProfile?.fullName || currentUser.email,
         uploader_id: currentUser.uid,
+        status: RESOURCE_STATUS.PENDING,
       });
       if (insertError) throw insertError;
 
@@ -107,7 +109,7 @@ export default function UploadForm({ onUploaded }) {
         // Upload already succeeded; don't block on profile counter updates.
       }
 
-      setSuccess("Resource uploaded successfully!");
+      setSuccess("Resource uploaded successfully! Awaiting admin approval.");
       setTitle("");
       setSemester("");
       setSubject("");
