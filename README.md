@@ -8,7 +8,7 @@ A **cloud-native** academic resource management platform built with React and Su
 
 ## Live Demo
 
->`https://academic-hub.vercel.app`
+>`[https://academic-hub.vercel.app]`
 
 ---
 
