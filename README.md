@@ -2,13 +2,13 @@
 
 A **cloud-native** academic resource management platform built with React and Supabase. Students upload, search, and download study materials; admins review uploads, manage users, and view platform analytics.
 
-> **Resume highlight:** Multi-tier cloud architecture with managed auth, PostgreSQL (RLS), object storage, RBAC, approval workflows, and analytics.
+
 
 ---
 
 ## Live Demo
 
-> Add your Vercel URL here after deployment, e.g. `https://academic-hub.vercel.app`
+>`https://academic-hub.vercel.app`
 
 ---
 
@@ -102,56 +102,7 @@ npm install
 cp .env.example .env
 ```
 
-Fill in from **Supabase Dashboard → Project Settings → API**:
 
-```env
-VITE_SUPABASE_URL=https://xxxxx.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGci...
-```
-
-### 3. Supabase database setup
-
-Run these SQL files **in order** in **Supabase → SQL Editor**:
-
-| Order | File | When |
-|-------|------|------|
-| 1 | `supabase/schema.sql` | New project only |
-| 2 | `supabase/phase2.sql` | If bookmarks table missing |
-| 3 | `supabase/phase3a.sql` | RBAC + approval workflow |
-| 4 | `supabase/phase3b.sql` | Analytics + activity + downloads |
-
-**Promote yourself to Admin:**
-
-```sql
-update public.profiles set role = 'Admin' where email = 'your-email@example.com';
-```
-
-**Disable email confirmation** (for development):  
-Authentication → Providers → Email → turn off **Confirm email**
-
-### 4. Run locally
-
-```bash
-npm run dev
-```
-
-Open `http://localhost:5173`
-
----
-
-## Deploy to Vercel (Free)
-
-1. Push this project to **GitHub**
-2. Go to [vercel.com](https://vercel.com) → **Add New Project** → import repo
-3. Framework preset: **Vite**
-4. Add environment variables:
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_ANON_KEY`
-5. Click **Deploy**
-
-`vercel.json` is included for React Router SPA routing.
-
----
 
 ## Project Structure
 
@@ -172,13 +123,6 @@ supabase/
 ```
 
 ---
-
-## Resume Bullet Points
-
-- Built a **cloud-native** academic platform using Supabase Auth, PostgreSQL, and object storage with **Row Level Security** policies
-- Implemented **RBAC** (Student/Admin) and an **admin approval workflow** for uploaded resources
-- Designed **analytics dashboard** with engagement metrics, download tracking, and real-time activity feed
-- Deployed a **serverless React frontend** on Vercel with environment-based cloud configuration
 
 ---
 
